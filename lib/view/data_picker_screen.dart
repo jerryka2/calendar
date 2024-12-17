@@ -1,30 +1,20 @@
 import 'package:flutter/material.dart';
 
-class DatePickerWidget extends StatefulWidget {
-  final Function(DateTime) onDateSelected;
+class DatePickerWidget extends StatelessWidget {
+  final ValueNotifier<DateTime> dateNotifier;
 
-  const DatePickerWidget({super.key, required this.onDateSelected});
+  const DatePickerWidget({required this.dateNotifier, super.key});
 
-  @override
-  _DatePickerWidgetState createState() => _DatePickerWidgetState();
-}
-
-class _DatePickerWidgetState extends State<DatePickerWidget> {
-  DateTime _selectedDate = DateTime.now();
-
-  Future<void> _pickDate() async {
-    DateTime? pickedDate = await showDatePicker(
+  void _pickDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: dateNotifier.value,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
 
     if (pickedDate != null) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-      widget.onDateSelected(_selectedDate);
+      dateNotifier.value = pickedDate;
     }
   }
 
@@ -32,15 +22,20 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          "Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
-          style: TextStyle(fontSize: 20),
+        ValueListenableBuilder<DateTime>(
+          valueListenable: dateNotifier,
+          builder: (context, date, _) {
+            return Text(
+              "Date: ${date.day}/${date.month}/${date.year}",
+              style: const TextStyle(fontSize: 20),
+            );
+          },
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         ElevatedButton(
-          onPressed: _pickDate,
+          onPressed: () => _pickDate(context),
           style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-          child: Text("Change Date"),
+          child: const Text("Change Date"),
         ),
       ],
     );
